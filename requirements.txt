@@ -1,0 +1,3 @@
+Flask==2.2.2
+reportlab==3.6.12
+gunicorn==20.1.0

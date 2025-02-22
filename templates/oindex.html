@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>練字紙產生器</title>
+</head>
+<body>
+    <h1>練字紙產生器</h1>
+
+    <!-- 
+         這裡放一個簡單的表單(不直接submit)，
+         再用 JS 來組合網址參數呼叫 /preview 或 /generate_pdf
+    -->
+    <form id="mainForm">
+        <label>要練字的文字：</label><br>
+        <textarea id="text" rows="4" cols="50">青山橫北郭，白水繞東城。</textarea><br><br>
+
+        <label>紙張方向：</label>
+        <select id="orientation">
+            <option value="portrait">直式(A4)</option>
+            <option value="landscape">橫式(A4)</option>
+        </select><br><br>
+
+        <label>行數 (rows)：</label>
+        <input id="rows" type="number" value="8"><br><br>
+
+        <label>列數 (cols)：</label>
+        <input id="cols" type="number" value="10"><br><br>
+
+        <button type="button" onclick="previewPDF()">預覽 PDF</button>
+        <button type="button" onclick="downloadPDF()">下載 PDF</button>
+    </form>
+
+    <hr>
+    <!-- 以 iframe 來嵌入預覽 PDF -->
+    <iframe id="pdfPreview" width="600" height="800"></iframe>
+
+    <script>
+        /*
+         點「預覽 PDF」時：
+           1. 讀取表單各值
+           2. 用 GET query string 方式呼叫 /preview
+           3. iframe src = /preview?text=...&orientation=...&rows=...&cols=...
+           => 瀏覽器會 inline 顯示 PDF
+        */
+        function previewPDF() {
+            const text = encodeURIComponent(document.getElementById("text").value);
+            const orientation = document.getElementById("orientation").value;
+            const rows = document.getElementById("rows").value;
+            const cols = document.getElementById("cols").value;
+
+            const url = `/preview?text=${text}&orientation=${orientation}&rows=${rows}&cols=${cols}`;
+            document.getElementById("pdfPreview").src = url;
+        }
+
+        /*
+         點「下載 PDF」時：
+           1. 用一個隱藏 form POST 到 /generate_pdf
+           2. 觸發檔案下載
+        */
+        function downloadPDF() {
+            const textVal = document.getElementById("text").value;
+            const orientationVal = document.getElementById("orientation").value;
+            const rowsVal = document.getElementById("rows").value;
+            const colsVal = document.getElementById("cols").value;
+
+            // 動態建 form
+            const form = document.createElement("form");
+            form.method = "POST";
+            form.action = "/generate_pdf";
+
+            // 建立隱藏欄位，把參數填入
+            const params = {
+                text: textVal,
+                orientation: orientationVal,
+                rows: rowsVal,
+                cols: colsVal
+            };
+            for (let key in params) {
+                const input = document.createElement("input");
+                input.type = "hidden";
+                input.name = key;
+                input.value = params[key];
+                form.appendChild(input);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+            // 提交後自動下載 PDF
+        }
+    </script>
+</body>
+</html>

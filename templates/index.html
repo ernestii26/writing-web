@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>練字紙產生器</title>
+</head>
+<body>
+    <h1>練字紙產生器</h1>
+
+    <form id="mainForm">
+        <label>要練字的文字：</label><br>
+        <textarea id="text" rows="4" cols="50">青山橫北郭，白水繞東城。隨意多打點字測試淡化效果</textarea><br><br>
+
+        <!-- 已取消紙張方向，固定直向A4 -->
+
+        <label>行數 (rows)：</label>
+        <input id="rows" type="number" value="14"><br><br>
+
+        <label>列數 (cols)：</label>
+        <input id="cols" type="number" value="10"><br><br>
+
+        <label>字體選擇：</label>
+        <select id="fontName">
+            {% for font in font_list %}
+            <option value="{{font}}">{{font}}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <label>淡化方式：</label>
+        <select id="faintOption">
+            <option value="second_line_faint">第二行起淡色</option>
+            <option value="gradual_fade">由第二行起漸漸變淡</option>
+        </select><br><br>
+
+        <button type="button" onclick="previewPDF()">預覽 PDF</button>
+        <button type="button" onclick="downloadPDF()">下載 PDF</button>
+    </form>
+
+    <hr>
+    <!-- 以 iframe 來嵌入預覽 PDF -->
+    <iframe id="pdfPreview" width="600" height="800"></iframe>
+
+    <script>
+        /*
+         點「預覽 PDF」時：
+           - 用 GET query string 方式呼叫 /preview
+           - 在 <iframe> 裡 inline 顯示 PDF
+        */
+        function previewPDF() {
+            const text = encodeURIComponent(document.getElementById("text").value);
+            const rows = document.getElementById("rows").value;
+            const cols = document.getElementById("cols").value;
+            const fontName = document.getElementById("fontName").value;
+            const faintOption = document.getElementById("faintOption").value;
+
+            // 沒有 orientation
+            const url = `/preview?text=${text}&rows=${rows}&cols=${cols}&fontName=${fontName}&faintOption=${faintOption}`;
+            document.getElementById("pdfPreview").src = url;
+        }
+
+        /*
+         點「下載 PDF」時：
+           - 用一個隱藏 form POST 到 /generate_pdf
+           - 觸發檔案下載
+        */
+        function downloadPDF() {
+            const textVal = document.getElementById("text").value;
+            const rowsVal = document.getElementById("rows").value;
+            const colsVal = document.getElementById("cols").value;
+            const fontNameVal = document.getElementById("fontName").value;
+            const faintOptionVal = document.getElementById("faintOption").value;
+
+            // 動態建表單
+            const form = document.createElement("form");
+            form.method = "POST";
+            form.action = "/generate_pdf";
+
+            const params = {
+                text: textVal,
+                rows: rowsVal,
+                cols: colsVal,
+                fontName: fontNameVal,
+                faintOption: faintOptionVal
+            };
+            for (let key in params) {
+                const input = document.createElement("input");
+                input.type = "hidden";
+                input.name = key;
+                input.value = params[key];
+                form.appendChild(input);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    </script>
+</body>
+</html>
