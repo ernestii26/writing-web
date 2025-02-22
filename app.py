@@ -12,7 +12,7 @@ app = Flask(__name__)
 
 # 字體地圖 (範例)
 FONT_MAP = {
-    "隨峰體": "fonts/THEPEAKFONTBETA_V0.TTF",
+    "隨峰體": "./fonts/THEPEAKFONTBETA_V0.TTF",
     # 其他字體...
 }
 
